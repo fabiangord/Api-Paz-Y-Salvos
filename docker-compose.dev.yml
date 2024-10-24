@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/dev/Dockerfile
+    depends_on:
+      - pyzdb
+    env_file:
+      - .env
+    networks:
+      - app_network_env
+
+  app-front-end:
+    image: andreslopezdev/pyz-frontend:beta2.1
+    environment:
+      - NEXT_PUBLIC_API=http://3.219.217.160/api
+      - TOKEN_KEY=$TOKEN_KEY
+    depends_on:
+      - app
+    networks:
+      - app_network_env
+
+  pyzdb:
+    image: mysql:8.3.0
+    volumes:
+      - database:/var/lib/mysql
+    environment:
+      - MYSQL_DATABASE=pyzdb
+      - MYSQL_ROOT_USER=root
+      - MYSQL_ROOT_PASSWORD=secret
+    networks:
+      - app_network_env
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - app-front-end
+      - app
+      - pyzdb
+    networks:
+      - app_network_env
+
+volumes:
+  database:
+
+
+networks:
+  app_network_env:
+    driver: bridge
+
+

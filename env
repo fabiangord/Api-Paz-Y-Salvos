@@ -1,0 +1,13 @@
+PORT=4000
+DATABASE_URL="mysql://root:secret@pyzdb:3306/pyzdb?"
+TOKEN_KEY='secret123'
+MOOD='dev'
+AWS_BUCKET_NAME=
+AWS_REGION=
+AWS_PUBLIC_KEY=
+AWS_SECRET_KEY=
+API_EMAIL=''
+API_MAIL=''
+FRONTEND='https://localhost'
+CORS=*
+

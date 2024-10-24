@@ -1,0 +1,155 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum enumDocumentType {
+  CC @map("C.C.")
+  CE @map("C.E")
+  TI @map("T.I")
+  PE @map("P.E")
+}
+
+enum enumRH {
+  O_PLUS
+  O_MINUS
+  A_PLUS
+  A_MINUS
+  B_PLUS
+  B_MINUS
+  AB_MINUS
+  AB_PLUS
+}
+
+enum enumGender {
+  MASCULINO
+  FEMENINO
+  OTRO
+}
+
+enum enumStatus {
+  RECHAZADO
+  PENDIENTE
+  APROBADO
+}
+
+enum enumTypeRequest {
+  PAZ_Y_SALVO
+}
+
+enum enumRol {
+  USER
+  AREA_MANAGER
+  ADMIN
+}
+
+model Rol {
+  id   String  @id @unique
+  rol  enumRol
+  User User[]
+}
+
+model DocumentType {
+  id   String           @id @unique
+  type enumDocumentType
+  User User[]
+}
+
+model Credentials {
+  id       String @id @unique
+  email    String @unique
+  password String
+  user     User   @relation(fields: [userId], references: [id])
+  userId   String
+}
+
+model RH {
+  id   String @id @unique
+  rh   enumRH @map("RH")
+  User User[]
+}
+
+model Gender {
+  id     String     @id @unique
+  gender enumGender @map("genero")
+  User   User[]
+}
+
+model Site {
+  id   String @id @unique
+  site String
+  User User[]
+}
+
+model Function {
+  id       String @id @unique
+  function String
+  User     User[]
+}
+
+model Contract {
+  id             String         @id @unique
+  NoContract     String         @unique @map("no_contract")
+  dateI          DateTime       @map("fecha_inicio")
+  dateF          DateTime       @map("fecha_fin")
+  contractor     String         @map("contratista")
+  priceContract  Int            @map("valor_contrato")
+  causalFinished String         @map("causal_terminacion_contrato")
+  Request        RequestModel[]
+  User           User?          @relation(fields: [userId], references: [id])
+  userId         String?        @map("id_contrato")
+}
+
+model RequestModel {
+  id          String          @id @unique
+  date        DateTime
+  typeRequest enumTypeRequest
+  status      enumStatus
+  contract    Contract        @relation(fields: [contractId], references: [NoContract])
+  contractId  String
+  user        User            @relation(fields: [userId], references: [id])
+  userId      String
+  validation  validation[]
+}
+
+model validation {
+  id            String       @id
+  status        enumStatus
+  commentary    String
+  areaManager   User         @relation(fields: [areaManagerId], references: [id])
+  areaManagerId String
+  request       RequestModel @relation(fields: [requestId], references: [id])
+  requestId     String
+  dateSign      DateTime?
+
+  @@unique([areaManagerId, requestId])
+}
+
+model User {
+  id             String         @id @unique
+  documentType   DocumentType   @relation(fields: [documentTypeId], references: [id])
+  documentTypeId String         @map("tipo_de_documento")
+  document       String         @unique
+  Rol            Rol            @relation(fields: [rolId], references: [id])
+  rolId          String
+  name           String         @map("nombre")
+  lastname       String         @map("apellido")
+  cellphone      String         @map("telefono")
+  city           String         @map("ciudad")
+  Rh             RH             @relation(fields: [rhId], references: [id])
+  rhId           String         @map("rh")
+  Gender         Gender         @relation(fields: [genderId], references: [id])
+  genderId       String         @map("genero")
+  Site           Site           @relation(fields: [siteId], references: [id])
+  siteId         String         @map("Centro_de_formacion")
+  Function       Function       @relation(fields: [functionId], references: [id])
+  functionId     String         @map("Funcion_encargada")
+  Credentials    Credentials[]
+  RequestModel   RequestModel[]
+  Contract       Contract[]
+  validation     validation[]
+}
